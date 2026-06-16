@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>部活カードジェネレーター</title>
     <style>
         body {
@@ -75,13 +76,11 @@
             width: 100%;
             font-weight: bold;
         }
-        .btn:disabled { background-color: #cbd5e1; cursor: not-allowed; }
-        .btn:hover:not(:disabled) { background-color: #1d4ed8; }
+        .btn:hover { background-color: #1d4ed8; }
         
         #result-container { margin-top: 24px; display: none; }
         canvas { max-width: 320px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .info-text { font-size: 0.85rem; color: #666; margin-top: 8px; }
-        .loading { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -89,11 +88,33 @@
 <div class="container">
     <h1>見に行った部活を選んでね</h1>
     
-    <div id="loading-text" class="loading">スプレッドシートから画像データを読み中...</div>
-    <div class="club-grid" id="grid-container">
-        </div>
+    <div class="club-grid">
+        <label><input type="checkbox" class="club-checkbox" id="club-1" data-name="バスケットボール部" data-emoji="🏀" data-color="#f97316"><div class="club-card"><span class="club-name">バスケット<br>ボール部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-2" data-name="ソフトテニス部" data-emoji="🎾" data-color="#84cc16"><div class="club-card"><span class="club-name">ソフトテニス部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-3" data-name="バレーボール部" data-emoji="🏐" data-color="#eab308"><div class="club-card"><span class="club-name">バレーボール部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-4" data-name="マッチョ部" data-emoji="💪" data-color="#ef4444"><div class="club-card"><span class="club-name">マッチョ部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-5" data-name="水泳部" data-emoji="🏊" data-color="#3b82f6"><div class="club-card"><span class="club-name">水泳部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-6" data-name="剣道同好会" data-emoji="⚔️" data-color="#64748b"><div class="club-card"><span class="club-name">剣道同好会</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-7" data-name="応援部" data-emoji="📢" data-color="#ec4899"><div class="club-card"><span class="club-name">応援部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-8" data-name="クリエイティ部" data-emoji="⚒️" data-color="#a16207"><div class="club-card"><span class="club-name">クリエイティ部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-9" data-name="五光倶楽同好会" data-emoji="🎴" data-color="#991b1b"><div class="club-card"><span class="club-name">五光倶楽<br>同好会</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-10" data-name="吹奏楽同好会" data-emoji="🎷" data-color="#d97706"><div class="club-card"><span class="club-name">吹奏楽同好会</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-11" data-name="料理部" data-emoji="🍳" data-color="#f59e0b"><div class="club-card"><span class="club-name">料理部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-12" data-name="演劇部" data-emoji="🎭" data-color="#a855f7"><div class="club-card"><span class="club-name">演劇部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-13" data-name="園芸部" data-emoji="🌷" data-color="#10b981"><div class="club-card"><span class="club-name">園芸部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-14" data-name="ボードゲーム部" data-emoji="🎲" data-color="#d946ef"><div class="club-card"><span class="club-name">ボードゲーム部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-15" data-name="茶道部" data-emoji="🍵" data-color="#15803d"><div class="club-card"><span class="club-name">茶道部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-16" data-name="写真部" data-emoji="📷" data-color="#06b6d4"><div class="club-card"><span class="club-name">写真部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-17" data-name="天文部" data-emoji="🪐" data-color="#1e3a8a"><div class="club-card"><span class="club-name">天文部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-18" data-name="生徒会" data-emoji="👥" data-color="#475569"><div class="club-card"><span class="club-name">生徒会</span></div></label>
+    </div>
 
-    <button class="btn" id="gen-btn" onclick="generateCard()" disabled>カード画像を生成する</button>
+    <button class="btn" onclick="generateCard()">カード画像を生成する</button>
 
     <div id="result-container">
         <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成したカード</h3>
@@ -103,49 +124,21 @@
 </div>
 
 <script>
-let globalClubData = [];
-
-// ページを開いた瞬間に、スプシの中の文字と画像データを一発で持ってくる
-window.onload = function() {
-    if (typeof google !== 'undefined' && google.script) {
-        google.script.run.withSuccessHandler(initializeGrid).getClubData();
-    } else {
-        document.getElementById('loading-text').innerText = "GAS環境外です（ローカルテスト用）";
-    }
-};
-
-// スプシのデータを元に画面のボタン（グリッド）を自動作成する
-function initializeGrid(data) {
-    globalClubData = data;
-    const container = document.getElementById('grid-container');
-    container.innerHTML = '';
-
-    data.forEach((club, index) => {
-        // 表示用に部活名に改行を入れる処理（6文字超えたら適宜分割）
-        let displayName = club.name;
-        if (displayName.length > 6 && !displayName.includes('<br>')) {
-            displayName = displayName.substring(0, 5) + '<br>' + displayName.substring(5);
-        }
-
-        const label = document.createElement('label');
-        label.innerHTML = `
-            <input type="checkbox" class="club-checkbox" id="${club.id}" data-index="${index}">
-            <div class="club-card">
-                <span class="club-name">${displayName}</span>
-            </div>
-        `;
-        container.appendChild(label);
-    });
-
-    document.getElementById('loading-text').style.display = 'none';
-    document.getElementById('gen-btn').disabled = false; // ボタンを押せるようにする
+// HEXカラーコードをRGBオブジェクトに変換する関数
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
 }
 
 function generateCard() {
     const canvas = document.getElementById('cardCanvas');
     const ctx = canvas.getContext('2d');
     
-    // 背景を白にする
+    // 背景を白で塗りつぶし
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -160,12 +153,17 @@ function generateCard() {
     const startX = (canvas.width - totalWidth) / 2;
     const startY = (canvas.height - totalHeight) / 2;
 
-    const checkedTasks = [];
-
-    // 18個のマス目を順番に描画していく
-    globalClubData.forEach((club, i) => {
-        const checkbox = document.getElementById(club.id);
+    for (let i = 0; i < 18; i++) {
+        const id = `club-${i + 1}`;
+        const checkbox = document.getElementById(id);
         
+        if (!checkbox) continue;
+
+        const clubName = checkbox.dataset.name;
+        const clubEmoji = checkbox.dataset.emoji;
+        const clubColor = checkbox.dataset.color;
+        const isChecked = checkbox.checked;
+
         const row = Math.floor(i / cols);
         const col = i % cols;
 
@@ -185,53 +183,64 @@ function generateCard() {
         ctx.fillStyle = '#334155';
         ctx.font = 'bold 15px sans-serif';
         
-        if (club.name.length > 6) {
+        if (clubName.length > 6) {
             ctx.font = 'bold 12px sans-serif';
         }
-        ctx.fillText(club.name, centerX, y + 35);
+        ctx.fillText(clubName, centerX, y + 35);
 
-        // チェックされていて、かつスプシに画像がある場合、描画予定リストに入れる
-        if (checkbox && checkbox.checked && club.imgData) {
-            const img = new Image();
-            img.src = club.imgData; // スプシから引っこ抜いた暗号テキスト画像
-            checkedTasks.push({ img: img, x: x, y: y });
+        // --- ③ 【絵文字専用】グレースケール輝度 ➔ 不透明度着色ロジック（チェック時のみ） ---
+        if (isChecked) {
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = boxSize;
+            offCanvas.height = boxSize;
+            const offCtx = offCanvas.getContext('2d');
+
+            // 1. 作業用Canvasに、まず普通にカラー絵文字を描く
+            offCtx.textAlign = 'center';
+            offCtx.font = '54px sans-serif';
+            offCtx.fillStyle = '#000000';
+            offCtx.fillText(clubEmoji, boxSize / 2, 110);
+
+            // 2. 描いた絵文字のピクセルデータを取得
+            const imgData = offCtx.getImageData(0, 0, boxSize, boxSize);
+            const data = imgData.data;
+            const targetColor = hexToRgb(clubColor);
+
+            // 3. 1ピクセルずつループして「濃淡」を計算して色を変える
+            for (let j = 0; j < data.length; j += 4) {
+                const r = data[j];
+                const g = data[j + 1];
+                const b = data[j + 2];
+                const a = data[j + 3];
+
+                if (a > 0) { // 透明じゃない部分を処理
+                    // 絵文字のピクセルから明るさ（輝度）を計算
+                    const brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+                    // 暗い部分（黒い線や影）ほど1.0に近づき、明るい部分ほど0.0に近づく係数
+                    const darknessFactor = 1.0 - (brightness / 255.0);
+
+                    // もともと絵文字が持っていた不透明度(a)に、暗さの係数を掛け算する
+                    // これにより「元の絵文字で黒かった線」だけが不透明として残り、明るい色は消える
+                    const newAlpha = a * darknessFactor;
+
+                    // ピクセルの色を指定された部活の色に上書きし、新しい不透明度をセット
+                    data[j]     = targetColor.r;
+                    data[j + 1] = targetColor.g;
+                    data[j + 2] = targetColor.b;
+                    data[j + 3] = newAlpha;
+                }
+            }
+
+            // 4. 加工したピクセルデータを戻す
+            offCtx.putImageData(imgData, 0, 0);
+
+            // 5. 本番用Canvasにスタンプとして転写
+            ctx.drawImage(offCanvas, x, y);
         }
-    });
-
-    if (checkedTasks.length === 0) {
-        document.getElementById('result-container').style.display = 'block';
-        return;
     }
 
-    // 安全にすべての画像オブジェクトの読み込み完了を待ってからCanvasへスタンプ
-    let loadedCount = 0;
-    checkedTasks.forEach(task => {
-        task.img.onload = function() {
-            loadedCount++;
-            if (loadedCount === checkedTasks.length) {
-                drawAllImages();
-            }
-        };
-        task.img.onerror = function() {
-            loadedCount++;
-            if (loadedCount === checkedTasks.length) {
-                drawAllImages();
-            }
-        };
-    });
-
-    function drawAllImages() {
-        checkedTasks.forEach(task => {
-            if (task.img.complete && task.img.naturalWidth !== 0) {
-                // 画像を正方形マスの中心、文字の下にぴったり配置（サイズ56px）
-                const imgSize = 56;
-                const imgX = task.x + (boxSize - imgSize) / 2;
-                const imgY = task.y + 65;
-                ctx.drawImage(task.img, imgX, imgY, imgSize, imgSize);
-            }
-        });
-        document.getElementById('result-container').style.display = 'block';
-    }
+    document.getElementById('result-container').style.display = 'block';
 }
 </script>
 
