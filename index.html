@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部活カードジェネレーター</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-width: 500px;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h1 { font-size: 1.1rem; color: #333; margin-bottom: 20px; }
+        
+        .club-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .club-checkbox { display: none; }
+
+        .club-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .club-name { 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            color: #475569; 
+            line-height: 1.2;
+            word-break: break-all;
+        }
+
+        .club-card:hover { border-color: #cbd5e1; background-color: #f8fafc; }
+        .club-checkbox:checked + .club-card {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+        .club-checkbox:checked + .club-card .club-name { color: #1d4ed8; }
+
+        .btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        .btn:hover { background-color: #1d4ed8; }
+        
+        #result-container { margin-top: 24px; display: none; }
+        canvas { max-width: 320px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .info-text { font-size: 0.85rem; color: #666; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>見に行った部活を選んでね</h1>
+    
+    <div class="club-grid">
+        <label><input type="checkbox" class="club-checkbox" id="club-1" data-name="バスケットボール部" data-emoji="🏀" data-color="#f97316"><div class="club-card"><span class="club-name">バスケット<br>ボール部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-2" data-name="ソフトテニス部" data-emoji="🎾" data-color="#84cc16"><div class="club-card"><span class="club-name">ソフトテニス部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-3" data-name="バレーボール部" data-emoji="🏐" data-color="#eab308"><div class="club-card"><span class="club-name">バレーボール部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-4" data-name="マッチョ部" data-emoji="💪" data-color="#ef4444"><div class="club-card"><span class="club-name">マッチョ部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-5" data-name="水泳部" data-emoji="🏊" data-color="#3b82f6"><div class="club-card"><span class="club-name">水泳部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-6" data-name="剣道同好会" data-emoji="⚔️" data-color="#64748b"><div class="club-card"><span class="club-name">剣道同好会</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-7" data-name="応援部" data-emoji="📢" data-color="#ec4899"><div class="club-card"><span class="club-name">応援部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-8" data-name="クリエイティ部" data-emoji="⚒️" data-color="#a16207"><div class="club-card"><span class="club-name">クリエイティ部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-9" data-name="五光倶楽同好会" data-emoji="🎴" data-color="#991b1b"><div class="club-card"><span class="club-name">五光倶楽<br>同好会</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-10" data-name="吹奏楽同好会" data-emoji="🎷" data-color="#d97706"><div class="club-card"><span class="club-name">吹奏楽同好会</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-11" data-name="料理部" data-emoji="🍳" data-color="#f59e0b"><div class="club-card"><span class="club-name">料理部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-12" data-name="演劇部" data-emoji="🎭" data-color="#a855f7"><div class="club-card"><span class="club-name">演劇部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-13" data-name="園芸部" data-emoji="🌷" data-color="#10b981"><div class="club-card"><span class="club-name">園芸部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-14" data-name="ボードゲーム部" data-emoji="🃏" data-color="#d946ef"><div class="club-card"><span class="club-name">ボードゲーム部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-15" data-name="茶道部" data-emoji="🍵" data-color="#15803d"><div class="club-card"><span class="club-name">茶道部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-16" data-name="写真部" data-emoji="📷" data-color="#06b6d4"><div class="club-card"><span class="club-name">写真部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-17" data-name="天文部" data-emoji="🪐" data-color="#1e3a8a"><div class="club-card"><span class="club-name">天文部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-18" data-name="生徒会" data-emoji="👥" data-color="#451a03"><div class="club-card"><span class="club-name">生徒会</span></div></label>
+    </div>
+
+    <button class="btn" onclick="generateCard()">カード画像を生成する</button>
+
+    <div id="result-container">
+        <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成したカード</h3>
+        <canvas id="cardCanvas" width="600" height="1000"></canvas>
+        <p class="info-text">※画像を長押し、または右クリックで保存してね！</p>
+    </div>
+</div>
+
+<script>
+function generateCard() {
+    const canvas = document.getElementById('cardCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const cols = 3;
+    const rows = 6;
+    const boxSize = 150;
+    const gap = 24;
+    
+    const totalWidth = (cols * boxSize) + ((cols - 1) * gap);
+    const totalHeight = (rows * boxSize) + ((rows - 1) * gap);
+    
+    const startX = (canvas.width - totalWidth) / 2;
+    const startY = (canvas.height - totalHeight) / 2;
+
+    for (let i = 0; i < 18; i++) {
+        const id = `club-${i + 1}`;
+        const checkbox = document.getElementById(id);
+        
+        if (!checkbox) continue;
+
+        const clubName = checkbox.dataset.name;
+        const clubEmoji = checkbox.dataset.emoji;
+        const clubColor = checkbox.dataset.color;
+        const isChecked = checkbox.checked;
+
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+
+        const x = startX + col * (boxSize + gap);
+        const y = startY + row * (boxSize + gap);
+
+        // --- ① 外枠（□）の描画 ---
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(x, y, boxSize, boxSize, 12);
+        ctx.stroke();
+
+        // --- ② 部活名の描画 ---
+        ctx.textAlign = 'center';
+        const centerX = x + (boxSize / 2);
+        ctx.fillStyle = '#334155';
+        ctx.font = 'bold 16px sans-serif';
+        
+        if (clubName.length > 6) {
+            ctx.font = 'bold 13px sans-serif';
+        }
+        ctx.fillText(clubName, centerX, y + 45);
+
+        // --- ③ シルエット絵文字の描画（チェック時のみ） ---
+        if (isChecked) {
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = boxSize;
+            offCanvas.height = boxSize;
+            const offCtx = offCanvas.getContext('2d');
+
+            // 【ここを修正】作業用スペースの中での「ローカルな中心座標」に描く
+            offCtx.textAlign = 'center';
+            offCtx.font = '50px sans-serif';
+            offCtx.fillStyle = '#000000';
+            // offCanvasの幅（boxSize）の半分が中心。Y座標も枠内での位置（115）に固定
+            offCtx.fillText(clubEmoji, boxSize / 2, 115);
+
+            // シルエット色に染める魔法
+            offCtx.globalCompositeOperation = 'source-in';
+            offCtx.fillStyle = clubColor;
+            offCtx.fillRect(0, 0, boxSize, boxSize);
+
+            // できあがったシルエットを、正しい位置（x, y）にピタッとスタンプ
+            ctx.drawImage(offCanvas, x, y);
+        }
+    }
+
+    document.getElementById('result-container').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
