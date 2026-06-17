@@ -119,7 +119,7 @@
 
     <div id="result-container">
         <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成した文化祭スタンプカード</h3>
-        <canvas id="cardCanvas" width="600" height="1100"></canvas>
+        <canvas id="cardCanvas" width="600" height="1200"></canvas>
         <img id="resultImage" alt="文化祭スタンプカード">
         <p class="info-text">※画像を長押し、または右クリックで保存してね！</p>
     </div>
@@ -135,7 +135,6 @@ function hexToRgb(hex) {
     } : { r: 0, g: 0, b: 0 };
 }
 
-// iOS特有の絵文字ズレ（異体字セレクタ依存）を防ぎ、確実に中央配置する関数
 function drawEmojiCentered(context, emoji, targetX, targetY, fontStyle) {
     context.save();
     context.font = fontStyle;
@@ -143,7 +142,6 @@ function drawEmojiCentered(context, emoji, targetX, targetY, fontStyle) {
     context.textAlign = 'left'; 
     
     const metrics = context.measureText(emoji);
-    // 実際の描画幅から正確なX座標を割り出す
     const exactX = targetX - (metrics.width / 2);
     context.fillText(emoji, exactX, targetY);
     context.restore();
@@ -156,7 +154,7 @@ function generateCard() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // --- 画像のタイトルを追加（上部の見切れ防止） ---
+    // タイトル
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#1e293b';
@@ -171,7 +169,6 @@ function generateCard() {
     const totalWidth = (cols * boxSize) + ((cols - 1) * gap);
     
     const startX = (canvas.width - totalWidth) / 2;
-    // タイトルが入るスペース（125px）を確保して開始位置を下げる
     const startY = 125; 
 
     for (let i = 0; i < 18; i++) {
@@ -192,17 +189,17 @@ function generateCard() {
         const y = startY + row * (boxSize + gap);
         const centerX = x + (boxSize / 2);
 
-        // --- ① 外枠（□）の描画 ---
-        ctx.strokeStyle = isChecked ? '#cbd5e1' : '#e2e8f0';
+        // --- ① 外枠（□）の描画（透過は下げず一律ではっきり描画） ---
+        ctx.strokeStyle = '#cbd5e1';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(x, y, boxSize, boxSize, 12);
         ctx.stroke();
 
-        // --- ② 部活名の描画 ---
+        // --- ② 部活名の描画（透過は下げず一律ではっきり描画） ---
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillStyle = isChecked ? '#1e293b' : '#94a3b8';
+        ctx.fillStyle = '#1e293b'; // 常にはっきりした色
         ctx.font = 'bold 15px sans-serif';
         
         if (clubName.length > 6) {
@@ -215,6 +212,10 @@ function generateCard() {
         const circleY = y + 95; 
         const circleRadius = 35; 
 
+        ctx.save();
+        if (!isChecked) {
+            ctx.globalAlpha = 0.15; // 未チェック時は丸枠の透過度を下げる
+        }
         ctx.beginPath();
         ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
         if (isChecked) {
@@ -227,15 +228,15 @@ function generateCard() {
             ctx.lineWidth = 1.5;
         }
         ctx.stroke();
+        ctx.restore();
 
-        // --- ④ 絵文字の描画（中心計算ロジック適用） ---
+        // --- ④ 絵文字の描画 ---
         if (isChecked) {
             const offCanvas = document.createElement('canvas');
             offCanvas.width = boxSize;
             offCanvas.height = boxSize;
             const offCtx = offCanvas.getContext('2d');
 
-            // iOS対策をした共通関数で作業用Canvasへ中央描画
             drawEmojiCentered(offCtx, clubEmoji, boxSize / 2, 95, '42px sans-serif');
 
             const imgData = offCtx.getImageData(0, 0, boxSize, boxSize);
@@ -264,8 +265,7 @@ function generateCard() {
             ctx.drawImage(offCanvas, x, y);
         } else {
             ctx.save();
-            ctx.globalAlpha = 0.15;
-            // 未チェック時の薄い絵文字にもiOSズレ対策を適用
+            ctx.globalAlpha = 0.15; // 未チェック時は絵文字の透過度を下げる
             drawEmojiCentered(ctx, clubEmoji, circleX, circleY, '42px sans-serif');
             ctx.restore();
         }
