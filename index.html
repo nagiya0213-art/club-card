@@ -79,7 +79,8 @@
         .btn:hover { background-color: #1d4ed8; }
         
         #result-container { margin-top: 24px; display: none; }
-        canvas { max-width: 320px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        #cardCanvas { display: none; }
+        #resultImage { max-width: 320px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .info-text { font-size: 0.85rem; color: #666; margin-top: 8px; }
     </style>
 </head>
@@ -114,17 +115,17 @@
         <label><input type="checkbox" class="club-checkbox" id="club-18" data-name="生徒会" data-emoji="👥" data-color="#475569"><div class="club-card"><span class="club-name">生徒会</span></div></label>
     </div>
 
-    <button class="btn" onclick="generateCard()">カード画像を生成する</button>
+    <button class="btn" onclick="generateCard()">文化祭スタンプカードを生成する</button>
 
     <div id="result-container">
-        <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成したカード</h3>
+        <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成した文化祭スタンプカード</h3>
         <canvas id="cardCanvas" width="600" height="1000"></canvas>
+        <img id="resultImage" alt="文化祭スタンプカード">
         <p class="info-text">※画像を長押し、または右クリックで保存してね！</p>
     </div>
 </div>
 
 <script>
-// HEXカラーコードをRGBオブジェクトに変換する関数
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -138,7 +139,6 @@ function generateCard() {
     const canvas = document.getElementById('cardCanvas');
     const ctx = canvas.getContext('2d');
     
-    // 背景を白で塗りつぶし
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -169,62 +169,72 @@ function generateCard() {
 
         const x = startX + col * (boxSize + gap);
         const y = startY + row * (boxSize + gap);
+        const centerX = x + (boxSize / 2);
 
         // --- ① 外枠（□）の描画 ---
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isChecked ? '#cbd5e1' : '#e2e8f0';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(x, y, boxSize, boxSize, 12);
         ctx.stroke();
 
         // --- ② 部活名の描画 ---
         ctx.textAlign = 'center';
-        const centerX = x + (boxSize / 2);
-        ctx.fillStyle = '#334155';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = isChecked ? '#1e293b' : '#94a3b8';
         ctx.font = 'bold 15px sans-serif';
         
         if (clubName.length > 6) {
             ctx.font = 'bold 12px sans-serif';
         }
-        ctx.fillText(clubName, centerX, y + 35);
+        ctx.fillText(clubName, centerX, y + 16);
 
-        // --- ③ 【絵文字専用】グレースケール輝度 ➔ 不透明度着色ロジック（チェック時のみ） ---
+        // --- ③ ○（丸枠）の描画 ---
+        const circleX = centerX;
+        const circleY = y + 95; 
+        const circleRadius = 35; 
+
+        ctx.beginPath();
+        ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+        if (isChecked) {
+            ctx.fillStyle = '#f8fafc'; 
+            ctx.fill();
+            ctx.strokeStyle = clubColor; 
+            ctx.lineWidth = 3;
+        } else {
+            ctx.strokeStyle = '#cbd5e1'; 
+            ctx.lineWidth = 1.5;
+        }
+        ctx.stroke();
+
+        // --- ④ 絵文字の描画 ---
         if (isChecked) {
             const offCanvas = document.createElement('canvas');
             offCanvas.width = boxSize;
             offCanvas.height = boxSize;
             const offCtx = offCanvas.getContext('2d');
 
-            // 1. 作業用Canvasに、まず普通にカラー絵文字を描く
             offCtx.textAlign = 'center';
-            offCtx.font = '54px sans-serif';
+            offCtx.textBaseline = 'middle';
+            offCtx.font = '42px sans-serif'; 
             offCtx.fillStyle = '#000000';
-            offCtx.fillText(clubEmoji, boxSize / 2, 110);
+            offCtx.fillText(clubEmoji, boxSize / 2, 95);
 
-            // 2. 描いた絵文字のピクセルデータを取得
             const imgData = offCtx.getImageData(0, 0, boxSize, boxSize);
             const data = imgData.data;
             const targetColor = hexToRgb(clubColor);
 
-            // 3. 1ピクセルずつループして「濃淡」を計算して色を変える
             for (let j = 0; j < data.length; j += 4) {
                 const r = data[j];
                 const g = data[j + 1];
                 const b = data[j + 2];
                 const a = data[j + 3];
 
-                if (a > 0) { // 透明じゃない部分を処理
-                    // 絵文字のピクセルから明るさ（輝度）を計算
+                if (a > 0) {
                     const brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-                    // 暗い部分（黒い線や影）ほど1.0に近づき、明るい部分ほど0.0に近づく係数
                     const darknessFactor = 1.0 - (brightness / 255.0);
-
-                    // もともと絵文字が持っていた不透明度(a)に、暗さの係数を掛け算する
-                    // これにより「元の絵文字で黒かった線」だけが不透明として残り、明るい色は消える
                     const newAlpha = a * darknessFactor;
 
-                    // ピクセルの色を指定された部活の色に上書きし、新しい不透明度をセット
                     data[j]     = targetColor.r;
                     data[j + 1] = targetColor.g;
                     data[j + 2] = targetColor.b;
@@ -232,13 +242,21 @@ function generateCard() {
                 }
             }
 
-            // 4. 加工したピクセルデータを戻す
             offCtx.putImageData(imgData, 0, 0);
-
-            // 5. 本番用Canvasにスタンプとして転写
             ctx.drawImage(offCanvas, x, y);
+        } else {
+            ctx.save();
+            ctx.globalAlpha = 0.15;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = '42px sans-serif';
+            ctx.fillText(clubEmoji, circleX, circleY);
+            ctx.restore();
         }
     }
+
+    const resultImage = document.getElementById('resultImage');
+    resultImage.src = canvas.toDataURL('image/png');
 
     document.getElementById('result-container').style.display = 'block';
 }
