@@ -119,7 +119,7 @@
 
     <div id="result-container">
         <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成した文化祭スタンプカード</h3>
-        <canvas id="cardCanvas" width="600" height="1000"></canvas>
+        <canvas id="cardCanvas" width="600" height="1100"></canvas>
         <img id="resultImage" alt="文化祭スタンプカード">
         <p class="info-text">※画像を長押し、または右クリックで保存してね！</p>
     </div>
@@ -135,6 +135,20 @@ function hexToRgb(hex) {
     } : { r: 0, g: 0, b: 0 };
 }
 
+// iOS特有の絵文字ズレ（異体字セレクタ依存）を防ぎ、確実に中央配置する関数
+function drawEmojiCentered(context, emoji, targetX, targetY, fontStyle) {
+    context.save();
+    context.font = fontStyle;
+    context.textBaseline = 'middle';
+    context.textAlign = 'left'; 
+    
+    const metrics = context.measureText(emoji);
+    // 実際の描画幅から正確なX座標を割り出す
+    const exactX = targetX - (metrics.width / 2);
+    context.fillText(emoji, exactX, targetY);
+    context.restore();
+}
+
 function generateCard() {
     const canvas = document.getElementById('cardCanvas');
     const ctx = canvas.getContext('2d');
@@ -142,16 +156,23 @@ function generateCard() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // --- 画像のタイトルを追加（上部の見切れ防止） ---
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText('文化祭スタンプカード', canvas.width / 2, 45);
+
     const cols = 3;
     const rows = 6;
     const boxSize = 150;
     const gap = 24;
     
     const totalWidth = (cols * boxSize) + ((cols - 1) * gap);
-    const totalHeight = (rows * boxSize) + ((rows - 1) * gap);
     
     const startX = (canvas.width - totalWidth) / 2;
-    const startY = (canvas.height - totalHeight) / 2;
+    // タイトルが入るスペース（125px）を確保して開始位置を下げる
+    const startY = 125; 
 
     for (let i = 0; i < 18; i++) {
         const id = `club-${i + 1}`;
@@ -207,18 +228,15 @@ function generateCard() {
         }
         ctx.stroke();
 
-        // --- ④ 絵文字の描画 ---
+        // --- ④ 絵文字の描画（中心計算ロジック適用） ---
         if (isChecked) {
             const offCanvas = document.createElement('canvas');
             offCanvas.width = boxSize;
             offCanvas.height = boxSize;
             const offCtx = offCanvas.getContext('2d');
 
-            offCtx.textAlign = 'center';
-            offCtx.textBaseline = 'middle';
-            offCtx.font = '42px sans-serif'; 
-            offCtx.fillStyle = '#000000';
-            offCtx.fillText(clubEmoji, boxSize / 2, 95);
+            // iOS対策をした共通関数で作業用Canvasへ中央描画
+            drawEmojiCentered(offCtx, clubEmoji, boxSize / 2, 95, '42px sans-serif');
 
             const imgData = offCtx.getImageData(0, 0, boxSize, boxSize);
             const data = imgData.data;
@@ -247,10 +265,8 @@ function generateCard() {
         } else {
             ctx.save();
             ctx.globalAlpha = 0.15;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = '42px sans-serif';
-            ctx.fillText(clubEmoji, circleX, circleY);
+            // 未チェック時の薄い絵文字にもiOSズレ対策を適用
+            drawEmojiCentered(ctx, clubEmoji, circleX, circleY, '42px sans-serif');
             ctx.restore();
         }
     }
