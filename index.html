@@ -92,4 +92,177 @@
     <div class="club-grid">
         <label><input type="checkbox" class="club-checkbox" id="club-1" data-name="バスケットボール部" data-emoji="🏀" data-color="#f97316"><div class="club-card"><span class="club-name">バスケット<br>ボール部</span></div></label>
         <label><input type="checkbox" class="club-checkbox" id="club-2" data-name="ソフトテニス部" data-emoji="🎾" data-color="#84cc16"><div class="club-card"><span class="club-name">ソフトテニス部</span></div></label>
-        <label><input type="checkbox" class="club-checkbox" id="club-3" data-name="バレーボール部" data-emoji="🏐
+        <label><input type="checkbox" class="club-checkbox" id="club-3" data-name="バレーボール部" data-emoji="🏐" data-color="#eab308"><div class="club-card"><span class="club-name">バレーボール部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-4" data-name="マッチョ部" data-emoji="💪" data-color="#ef4444"><div class="club-card"><span class="club-name">マッチョ部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-5" data-name="水泳部" data-emoji="🏊" data-color="#3b82f6"><div class="club-card"><span class="club-name">水泳部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-6" data-name="剣道同好会" data-emoji="⚔️" data-color="#64748b"><div class="club-card"><span class="club-name">剣道同好会</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-7" data-name="応援部" data-emoji="📢" data-color="#ec4899"><div class="club-card"><span class="club-name">応援部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-8" data-name="クリエイティ部" data-emoji="⚒️" data-color="#a16207"><div class="club-card"><span class="club-name">クリエイティ部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-9" data-name="五光倶楽同好会" data-emoji="🎴" data-color="#991b1b"><div class="club-card"><span class="club-name">五光倶楽<br>同好会</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-10" data-name="吹奏楽同好会" data-emoji="🎷" data-color="#d97706"><div class="club-card"><span class="club-name">吹奏楽同好会</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-11" data-name="料理部" data-emoji="🍳" data-color="#f59e0b"><div class="club-card"><span class="club-name">料理部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-12" data-name="演劇部" data-emoji="🎭" data-color="#a855f7"><div class="club-card"><span class="club-name">演劇部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-13" data-name="園芸部" data-emoji="🌷" data-color="#10b981"><div class="club-card"><span class="club-name">園芸部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-14" data-name="ボードゲーム部" data-emoji="🎲" data-color="#d946ef"><div class="club-card"><span class="club-name">ボードゲーム部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-15" data-name="茶道部" data-emoji="🍵" data-color="#15803d"><div class="club-card"><span class="club-name">茶道部</span></div></label>
+        
+        <label><input type="checkbox" class="club-checkbox" id="club-16" data-name="写真部" data-emoji="📷" data-color="#06b6d4"><div class="club-card"><span class="club-name">写真部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-17" data-name="天文部" data-emoji="🪐" data-color="#1e3a8a"><div class="club-card"><span class="club-name">天文部</span></div></label>
+        <label><input type="checkbox" class="club-checkbox" id="club-18" data-name="生徒会" data-emoji="👥" data-color="#475569"><div class="club-card"><span class="club-name">生徒会</span></div></label>
+    </div>
+
+    <button class="btn" onclick="generateCard()">文化祭スタンプカードを生成する</button>
+
+    <div id="result-container">
+        <h3 style="font-size: 1rem; color: #475569; margin-bottom: 12px;">完成した文化祭スタンプカード</h3>
+        <canvas id="cardCanvas" width="600" height="1200"></canvas>
+        <img id="resultImage" alt="文化祭スタンプカード">
+        <p class="info-text">※画像を長押し、または右クリックで保存してね！</p>
+    </div>
+</div>
+
+<script>
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+}
+
+function drawEmojiCentered(context, emoji, targetX, targetY, fontStyle) {
+    context.save();
+    context.font = fontStyle;
+    context.textBaseline = 'middle';
+    context.textAlign = 'left'; 
+    
+    const metrics = context.measureText(emoji);
+    const exactX = targetX - (metrics.width / 2);
+    context.fillText(emoji, exactX, targetY);
+    context.restore();
+}
+
+function generateCard() {
+    const canvas = document.getElementById('cardCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // タイトル
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText('文化祭スタンプカード', canvas.width / 2, 45);
+
+    const cols = 3;
+    const rows = 6;
+    const boxSize = 150;
+    const gap = 24;
+    
+    const totalWidth = (cols * boxSize) + ((cols - 1) * gap);
+    
+    const startX = (canvas.width - totalWidth) / 2;
+    const startY = 125; 
+
+    for (let i = 0; i < 18; i++) {
+        const id = `club-${i + 1}`;
+        const checkbox = document.getElementById(id);
+        
+        if (!checkbox) continue;
+
+        const clubName = checkbox.dataset.name;
+        const clubEmoji = checkbox.dataset.emoji;
+        const clubColor = checkbox.dataset.color;
+        const isChecked = checkbox.checked;
+
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+
+        const x = startX + col * (boxSize + gap);
+        const y = startY + row * (boxSize + gap);
+        const centerX = x + (boxSize / 2);
+
+        // --- ① 外枠（□）の描画（一律ではっきり描画） ---
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(x, y, boxSize, boxSize, 12);
+        ctx.stroke();
+
+        // --- ② 部活名の描画（一律ではっきり描画） ---
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#1e293b'; 
+        ctx.font = 'bold 15px sans-serif';
+        
+        if (clubName.length > 6) {
+            ctx.font = 'bold 12px sans-serif';
+        }
+        ctx.fillText(clubName, centerX, y + 16);
+
+        // --- ③ チェックが入っている時だけ「丸枠」と「絵文字」を描画 ---
+        if (isChecked) {
+            // ○（丸枠）の描画
+            const circleX = centerX;
+            const circleY = y + 95; 
+            const circleRadius = 35; 
+
+            ctx.beginPath();
+            ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#f8fafc'; 
+            ctx.fill();
+            ctx.strokeStyle = clubColor; 
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 絵文字の描画（スタンプ加工）
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = boxSize;
+            offCanvas.height = boxSize;
+            const offCtx = offCanvas.getContext('2d');
+
+            drawEmojiCentered(offCtx, clubEmoji, boxSize / 2, 95, '42px sans-serif');
+
+            const imgData = offCtx.getImageData(0, 0, boxSize, boxSize);
+            const data = imgData.data;
+            const targetColor = hexToRgb(clubColor);
+
+            for (let j = 0; j < data.length; j += 4) {
+                const r = data[j];
+                const g = data[j + 1];
+                const b = data[j + 2];
+                const a = data[j + 3];
+
+                if (a > 0) {
+                    const brightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                    const darknessFactor = 1.0 - (brightness / 255.0);
+                    const newAlpha = a * darknessFactor;
+
+                    data[j]     = targetColor.r;
+                    data[j + 1] = targetColor.g;
+                    data[j + 2] = targetColor.b;
+                    data[j + 3] = newAlpha;
+                }
+            }
+
+            offCtx.putImageData(imgData, 0, 0);
+            ctx.drawImage(offCanvas, x, y);
+        }
+    }
+
+    const resultImage = document.getElementById('resultImage');
+    resultImage.src = canvas.toDataURL('image/png');
+
+    document.getElementById('result-container').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
